@@ -1,47 +1,49 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 
 import { FiSearch } from 'react-icons/fi';
 import { FormBtn, InputSearch, SearchFormStyled } from './SearchForm.styled';
+import { nanoid } from '@reduxjs/toolkit';
+import { useDispatch, useSelector } from 'react-redux';
+import { addTodo } from 'redux/todoSlice';
+import { selectTodos } from 'redux/selectors';
 
-export class SearchForm extends Component {
-  state = {
-    query: '',
+export const SearchForm = () => {
+  const [query, setQuery] = useState('');
+  const dispatch = useDispatch();
+  const todos = useSelector(selectTodos);
+
+  const handleInput = e => {
+    setQuery(e.target.value);
   };
 
-  handleInput = e => {
-    this.setState({
-      query: e.currentTarget.value,
-    });
-  };
-
-  handleSubmit = e => {
-    const { query } = this.state;
-
+  const handleSubmit = e => {
     e.preventDefault();
-
-    this.props.onSubmit(query);
-
-    this.setState({
-      query: '',
-    });
+    const todo = {
+      id: nanoid(),
+      text: query,
+    };
+    const isExsistTodo = todos.find(todo => todo.text === query);
+    if (isExsistTodo) {
+      alert('Todo already exsist');
+      return;
+    }
+    dispatch(addTodo(todo));
+    setQuery('');
   };
-  render() {
-    const { query } = this.state;
 
-    return (
-      <SearchFormStyled onSubmit={this.handleSubmit}>
-        <FormBtn type="submit">
-          <FiSearch size="16px" />
-        </FormBtn>
-        <InputSearch
-          onChange={this.handleInput}
-          placeholder="What do you want to write?"
-          name="search"
-          required
-          value={query}
-          autoFocus
-        />
-      </SearchFormStyled>
-    );
-  }
-}
+  return (
+    <SearchFormStyled onSubmit={handleSubmit}>
+      <FormBtn type="submit">
+        <FiSearch size="16px" />
+      </FormBtn>
+      <InputSearch
+        onChange={handleInput}
+        placeholder="What do you want to write?"
+        name="search"
+        required
+        value={query}
+        autoFocus
+      />
+    </SearchFormStyled>
+  );
+};
